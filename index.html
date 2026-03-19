@@ -8,20 +8,32 @@
         :root { --primary: #4A90E2; --accent: #FF6B6B; --bg: #F8FAFC; --desk: #FFFFFF; --board: #2D5A27; }
         body { font-family: 'Nanum Gothic', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
-        /* 타이틀 */
-        .page-title { color: var(--primary); font-size: 2.2rem; font-weight: bold; margin-bottom: 30px; }
+        .page-title { color: var(--primary); font-size: 2.2rem; font-weight: bold; margin-bottom: 30px; text-align: center; }
 
         /* 설정 섹션 */
         .config-panel { background: #FFFFFF; border: 2px solid #E2E8F0; padding: 25px; border-radius: 20px; margin-bottom: 20px; }
-        .upload-box { border: 2px dashed #CBD5E1; padding: 20px; border-radius: 15px; background: #F1F5F9; margin-bottom: 20px; }
-        #manual-input { width: 95%; height: 120px; padding: 15px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 1rem; }
+        .upload-box { border: 2px dashed #CBD5E1; padding: 20px; border-radius: 15px; background: #F1F5F9; margin-bottom: 20px; text-align: center; }
+        #manual-input { width: 95%; height: 100px; padding: 15px; border-radius: 10px; border: 1px solid #CBD5E1; font-size: 1rem; }
 
-        /* 설정 단계에서의 자리 고정 영역 */
-        .preview-section { margin: 20px 0; padding: 20px; background: #FFF9DB; border-radius: 15px; border: 1px solid #FFE066; }
-        .preview-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px; }
-        .preview-desk { width: 80px; height: 50px; background: white; border: 1px solid #ccc; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; position: relative; }
-        .preview-desk.fixed { border: 2px solid var(--accent); background: #FFF0F0; }
+        /* 비밀 고정 영역 (실제 대형 반영) */
+        .preview-section { margin: 20px 0; padding: 25px; background: #FFF9DB; border-radius: 15px; border: 1px solid #FFE066; }
+        .preview-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 20px; }
+        
+        /* 칠판 미니 버전 (설정화면용) */
+        .mini-board { width: 150px; background: var(--board); color: white; margin: 0 auto 20px; padding: 5px; border-radius: 5px; font-size: 0.8rem; text-align: center; border: 3px solid #5D4037; }
+
+        /* 공통 책상 스타일 */
+        .bundan { display: grid; gap: 8px; }
+        .bundan-1 { grid-template-columns: repeat(1, 1fr); }
+        .bundan-2 { grid-template-columns: repeat(2, 1fr); }
+        .bundan-3 { grid-template-columns: repeat(3, 1fr); }
+
+        .preview-desk { 
+            width: 90px; height: 60px; background: white; border: 1px solid #ccc; 
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; 
+            font-size: 0.85rem; cursor: pointer; text-align: center; position: relative; 
+        }
+        .preview-desk.fixed { border: 2px solid var(--accent); background: #FFF0F0; font-weight: bold; color: var(--accent); }
 
         /* 메인 배치 화면 */
         #capture-area { padding: 40px 20px; background: white; border-radius: 20px; }
@@ -33,13 +45,7 @@
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
         
-        /* 분단형 레이아웃 */
         .grid-layout { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; }
-        .bundan { display: grid; gap: 10px; }
-        .bundan-2 { grid-template-columns: repeat(2, 1fr); }
-        .bundan-3 { grid-template-columns: repeat(3, 1fr); }
-        .bundan-1 { grid-template-columns: repeat(1, 1fr); }
-
         .student-desk { 
             width: 140px; height: 95px; background: var(--desk); border: 3px solid #CBD5E1; 
             border-radius: 12px; display: flex; flex-direction: column; align-items: center; 
@@ -48,13 +54,12 @@
         }
         .desk-num { position: absolute; top: 6px; left: 10px; font-size: 0.8rem; color: #94A3B8; }
 
-        /* 버튼 스타일 */
         .btn-group { margin-top: 40px; display: flex; justify-content: center; gap: 15px; }
         .btn { padding: 15px 40px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; box-shadow: 0 5px 0 #357ABD; }
         .btn-accent { background: var(--accent); color: white; box-shadow: 0 5px 0 #D64545; }
         .btn-save { background: #2ECC71; color: white; box-shadow: 0 5px 0 #27AE60; }
-        .btn:active { transform: translateY(3px); box-shadow: none; }
+        .btn:disabled { background: #ccc; box-shadow: none; cursor: default; }
     </style>
 </head>
 <body>
@@ -72,25 +77,28 @@
             <input type="file" id="excel-input" accept=".csv" onchange="loadStudents()">
         </div>
         <div id="manual-area" class="upload-box" style="display:none;">
-            <textarea id="manual-input" placeholder="이름을 쉼표(,)나 줄바꿈으로 입력하세요." onchange="syncManualList()"></textarea>
+            <textarea id="manual-input" placeholder="이름을 쉼표(,)나 줄바꿈으로 입력하세요. (입력 후 명단 확정을 위해 바깥을 클릭하세요)" onblur="syncManualList()"></textarea>
         </div>
 
-        <div id="secret-setup" class="preview-section" style="display:none;">
-            <strong>🔒 선생님 비밀 설정: 자리를 클릭해 학생을 미리 배치하세요.</strong>
-            <p style="font-size:0.8rem; color:#666;">(배치 결과 화면에서는 고정 표시가 나타나지 않습니다.)</p>
-            <div id="preview-grid" class="preview-grid"></div>
-        </div>
-
-        <div style="text-align: center; margin-top: 20px;">
-            <strong>대형 선택:</strong>
-            <select id="layout-select" style="padding:10px; font-size:1rem; border-radius:8px;">
+        <div style="text-align: center; margin: 20px 0;">
+            <strong>배치할 대형 먼저 선택:</strong>
+            <select id="layout-select" style="padding:10px; font-size:1rem; border-radius:8px;" onchange="updateSecretUI()">
                 <option value="2-3">분단형 (2-2-2)</option>
                 <option value="3-2">분단형 (3-3)</option>
                 <option value="2-4">분단형 (2-2-2-2)</option>
-                <option value="3-3">대형 모둠 (3-3-3)</option>
                 <option value="1-6">개별형 (1-1-1-1-1-1)</option>
             </select>
-            <button class="btn btn-main" style="margin-left:20px;" onclick="initClassroom()">자리 배치 화면으로 이동</button>
+        </div>
+
+        <div id="secret-setup" class="preview-section" style="display:none;">
+            <div class="mini-board">칠 판</div>
+            <strong>🔒 선생님 비밀 설정 (대형 미리보기)</strong>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">책상을 클릭해 학생을 미리 배치하세요. (결과 화면에선 표시되지 않음)</p>
+            <div id="preview-grid" class="preview-grid"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn btn-main" onclick="initClassroom()">자리 배치 화면으로 이동</button>
         </div>
     </div>
 
@@ -101,7 +109,6 @@
             </div>
             <div id="desk-grid" class="grid-layout"></div>
         </div>
-
         <div class="btn-group">
             <button class="btn btn-accent" id="shuffle-btn" onclick="startShuffle()">자리 섞기 시작!</button>
             <button class="btn btn-save" onclick="saveAsImage()">결과 이미지 저장</button>
@@ -126,58 +133,29 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             students = e.target.result.split(/[\n,\r]/).map(s => s.trim()).filter(s => s && s !== '이름');
-            showSecretSetup();
+            updateSecretUI();
         };
         reader.readAsText(file, 'EUC-KR');
     }
 
     function syncManualList() {
         students = document.getElementById('manual-input').value.split(/[,\n]/).map(s => s.trim()).filter(s => s);
-        if(students.length > 0) showSecretSetup();
+        if(students.length > 0) updateSecretUI();
     }
 
-    // 설정 단계에서 고정 자리를 미리 보여주는 함수
-    function showSecretSetup() {
+    // 설정 화면에서도 실제 대형 UI를 보여주는 함수
+    function updateSecretUI() {
+        if (students.length === 0) return;
+        
         const secretDiv = document.getElementById('secret-setup');
         const grid = document.getElementById('preview-grid');
         secretDiv.style.display = 'block';
         grid.innerHTML = '';
-        fixedSeats = {}; // 초기화
-
-        students.forEach((_, i) => {
-            const desk = document.createElement('div');
-            desk.className = 'preview-desk';
-            desk.id = `p-desk-${i}`;
-            desk.innerText = i + 1;
-            desk.onclick = () => {
-                const name = prompt(`[${i+1}번 자리] 고정할 학생 이름:\n(${students.join(', ')})`);
-                if(name && students.includes(name)) {
-                    fixedSeats[i] = name;
-                    desk.innerText = name;
-                    desk.classList.add('fixed');
-                } else if(name === "") {
-                    delete fixedSeats[i];
-                    desk.innerText = i + 1;
-                    desk.classList.remove('fixed');
-                }
-            };
-            grid.appendChild(desk);
-        });
-    }
-
-    function initClassroom() {
-        if(students.length === 0) return alert("학생 명단을 먼저 입력해주세요.");
         
-        document.getElementById('setup-view').style.display = 'none';
-        document.getElementById('main-view').style.display = 'block';
-        
-        const grid = document.getElementById('desk-grid');
         const layoutVal = document.getElementById('layout-select').value;
         const [colsPerBundan, bundanCount] = layoutVal.split('-').map(Number);
-        
-        grid.innerHTML = '';
         const studentsPerBundan = Math.ceil(students.length / bundanCount);
-        
+
         for(let b = 0; b < bundanCount; b++) {
             const bundanDiv = document.createElement('div');
             bundanDiv.className = `bundan bundan-${colsPerBundan}`;
@@ -185,12 +163,52 @@
             for(let s = 0; s < studentsPerBundan; s++) {
                 const idx = b * studentsPerBundan + s;
                 if(idx < students.length) {
+                    const desk = document.createElement('div');
+                    desk.className = 'preview-desk';
+                    if (fixedSeats[idx]) {
+                        desk.innerText = fixedSeats[idx];
+                        desk.classList.add('fixed');
+                    } else {
+                        desk.innerText = idx + 1;
+                    }
+
+                    desk.onclick = () => {
+                        const name = prompt(`[${idx+1}번 자리] 고정할 학생 이름:\n(${students.join(', ')})`);
+                        if(name && students.includes(name)) {
+                            fixedSeats[idx] = name;
+                        } else {
+                            delete fixedSeats[idx];
+                        }
+                        updateSecretUI(); // UI 갱신
+                    };
+                    bundanDiv.appendChild(desk);
+                }
+            }
+            grid.appendChild(bundanDiv);
+        }
+    }
+
+    function initClassroom() {
+        if(students.length === 0) return alert("학생 명단을 입력해주세요.");
+        document.getElementById('setup-view').style.display = 'none';
+        document.getElementById('main-view').style.display = 'block';
+        
+        const grid = document.getElementById('desk-grid');
+        const [colsPerBundan, bundanCount] = document.getElementById('layout-select').value.split('-').map(Number);
+        
+        grid.innerHTML = '';
+        const studentsPerBundan = Math.ceil(students.length / bundanCount);
+        
+        for(let b = 0; b < bundanCount; b++) {
+            const bundanDiv = document.createElement('div');
+            bundanDiv.className = `bundan bundan-${colsPerBundan}`;
+            for(let s = 0; s < studentsPerBundan; s++) {
+                const idx = b * studentsPerBundan + s;
+                if(idx < students.length) {
                     const div = document.createElement('div');
                     div.className = 'student-desk';
-                    div.innerHTML = `
-                        <span class="desk-num">${idx + 1}</span>
-                        <span id="name-${idx}">${fixedSeats[idx] ? fixedSeats[idx] : "?"}</span>
-                    `;
+                    // 초기에는 물음표 또는 선생님이 고정한 이름(?) -> 보안을 위해 물음표로 통일 권장
+                    div.innerHTML = `<span class="desk-num">${idx + 1}</span><span id="name-${idx}">?</span>`;
                     bundanDiv.appendChild(div);
                 }
             }
@@ -203,14 +221,12 @@
         btn.disabled = true;
         let count = 0;
         const interval = setInterval(() => {
-            const tempPool = [...students].sort(() => Math.random() - 0.5);
+            const shufflePool = [...students].sort(() => Math.random() - 0.5);
             students.forEach((_, i) => {
-                if(!fixedSeats[i]) {
-                    const el = document.getElementById(`name-${i}`);
-                    if(el) el.innerText = tempPool[i] || "?";
-                }
+                const el = document.getElementById(`name-${i}`);
+                if(el) el.innerText = shufflePool[i % shufflePool.length];
             });
-            if(++count > 15) {
+            if(++count > 25) {
                 clearInterval(interval);
                 finalizeShuffle();
             }
@@ -220,11 +236,10 @@
     function finalizeShuffle() {
         const fixedNames = Object.values(fixedSeats);
         let pool = students.filter(s => !fixedNames.includes(s)).sort(() => Math.random() - 0.5);
-
         students.forEach((_, i) => {
-            if(!fixedSeats[i]) {
-                const el = document.getElementById(`name-${i}`);
-                if(el) el.innerText = pool.pop() || "-";
+            const el = document.getElementById(`name-${i}`);
+            if(el) {
+                el.innerText = fixedSeats[i] ? fixedSeats[i] : (pool.pop() || "-");
             }
         });
         document.getElementById('shuffle-btn').innerText = "배치 완료!";
