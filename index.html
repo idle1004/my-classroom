@@ -6,189 +6,150 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* 기본 변수 (일반 테마) */
         :root {
-            --primary: #4A90E2;
-            --accent: #FF6B6B;
-            --bg: #F8FAFC;
-            --container-bg: #FFFFFF;
-            --desk: #FFFFFF;
-            --board: #2D5A27;
-            --text: #333;
-            --border: #CBD5E1;
-            --font: 'Nanum Gothic', sans-serif;
+            --primary: #4A90E2; --accent: #FF6B6B; --bg: #F8FAFC; --container-bg: #FFFFFF;
+            --desk: #FFFFFF; --board: #2D5A27; --text: #333; --border: #CBD5E1; --font: 'Nanum Gothic', sans-serif;
         }
 
-        /* 우주 테마 변수 */
         body.space-theme {
-            --primary: #5BC0BE;
-            --accent: #FF6B6B;
-            --bg: #0B132B;
-            --container-bg: rgba(255, 255, 255, 0.05);
-            --desk: rgba(255, 255, 255, 0.1);
-            --board: linear-gradient(135deg, #2D5A27, #1E3A1A);
-            --text: #FFFFFF;
-            --border: rgba(255, 255, 255, 0.2);
-            --font: 'Gaegu', cursive;
+            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #0B132B;
+            --container-bg: rgba(15, 25, 50, 0.7); --desk: rgba(255, 255, 255, 0.15);
+            --board: linear-gradient(135deg, #2D5A27, #1E3A1A); --text: #FFFFFF;
+            --border: rgba(91, 192, 190, 0.4); --font: 'Gaegu', cursive;
+            overflow: hidden; /* 우주선 나가는 효과 위해 */
         }
 
         body {
-            font-family: var(--font);
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 20px;
-            transition: all 0.5s ease;
+            font-family: var(--font); background-color: var(--bg); color: var(--text);
+            margin: 0; padding: 20px; transition: all 0.5s ease; min-height: 100vh;
         }
 
-        /* 우주 배경 효과 */
-        body.space-theme {
-            background-image: 
-                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
-                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
-            background-size: 550px 550px, 350px 350px;
+        /* --- 우주 애니메이션 요소 --- */
+        .space-obj { display: none; position: fixed; z-index: -1; pointer-events: none; }
+        body.space-theme .space-obj { display: block; }
+
+        /* 행성들 */
+        .planet { width: 100px; height: 100px; border-radius: 50%; opacity: 0.8; animation: float 10s infinite ease-in-out; }
+        .p1 { background: radial-gradient(circle at 30%, #ff9a9e, #fecfef); top: 10%; left: 5%; }
+        .p2 { background: radial-gradient(circle at 30%, #a1c4fd, #c2e9fb); bottom: 15%; right: 10%; width: 150px; height: 150px; }
+        
+        /* 날아다니는 우주선 */
+        .ufo { font-size: 3rem; position: fixed; top: 20%; left: -100px; animation: fly 15s infinite linear; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        @keyframes fly {
+            0% { left: -100px; transform: scale(1) rotate(10deg); }
+            50% { transform: scale(1.2) rotate(-10deg); }
+            100% { left: 110%; transform: scale(1) rotate(10deg); }
         }
 
         .container {
-            max-width: 1100px; margin: auto;
-            background: var(--container-bg);
-            backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 40px;
-            border: 2px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 1100px; margin: auto; background: var(--container-bg);
+            backdrop-filter: blur(12px); padding: 40px; border-radius: 40px;
+            border: 2px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative; z-index: 10;
         }
 
-        /* 테마 토글 스위치 */
-        .theme-toggle-container {
-            display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 20px;
-        }
-        .switch {
-            position: relative; display: inline-block; width: 60px; height: 30px;
-        }
+        /* 테마 토글 */
+        .theme-toggle-container { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #5BC0BE; }
-        input:checked + .slider:before { transform: translateX(30px); }
+        input:checked + .slider:before { transform: translateX(24px); }
 
-        .page-title { font-size: 2.5rem; text-align: center; font-weight: bold; margin-bottom: 30px; }
-        body.space-theme .page-title { color: #F9D423; text-shadow: 0 0 10px rgba(249, 212, 35, 0.5); }
+        .page-title { font-size: 2.8rem; text-align: center; font-weight: bold; margin-bottom: 30px; }
+        body.space-theme .page-title { color: #F9D423; text-shadow: 0 0 15px rgba(249, 212, 35, 0.6); }
 
-        /* 설정 박스 */
-        .config-panel {
-            background: rgba(128, 128, 128, 0.05);
-            padding: 25px; border-radius: 30px; border: 1px solid var(--border);
-        }
-
-        .upload-box { border: 2px dashed var(--primary); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
-        textarea { width: 100%; height: 80px; border-radius: 15px; padding: 15px; font-family: inherit; border: 1px solid var(--border); background: var(--desk); color: var(--text); }
-
-        /* 버튼 */
-        .btn {
-            padding: 12px 30px; border-radius: 30px; border: none; font-family: inherit;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 5px;
-        }
+        /* 설정창 */
+        .config-panel { background: rgba(128, 128, 128, 0.05); padding: 25px; border-radius: 30px; border: 1px solid var(--border); }
+        .btn { padding: 12px 25px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 5px; }
         .btn-main { background: var(--primary); color: white; }
         .btn-accent { background: var(--accent); color: white; }
 
-        /* 자리 배치 영역 */
-        .preview-section { background: rgba(255, 255, 0, 0.1); border-radius: 25px; padding: 20px; margin: 20px 0; border: 1px solid var(--border); }
-        .preview-desk {
-            width: 80px; height: 50px; background: var(--desk); border: 1px solid var(--border);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem;
-        }
-        .preview-desk.fixed { background: var(--accent); color: white; }
+        /* 미리보기 책상 */
+        .preview-section { background: rgba(255, 255, 0, 0.05); border-radius: 25px; padding: 20px; margin: 20px 0; border: 1px dashed var(--border); }
+        .preview-desk { width: 85px; height: 55px; background: var(--desk); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; }
+        .preview-desk.fixed { background: var(--accent); color: white; box-shadow: 0 0 10px var(--accent); }
 
-        .blackboard {
-            width: 60%; background: var(--board); color: white; padding: 20px;
-            border-radius: 50px 50px 10px 10px; border: 5px solid #5D4037;
-            margin: 0 auto 50px; font-size: 2rem; text-align: center;
-        }
-
-        .student-desk {
-            width: 140px; height: 95px; background: var(--desk); border: 2px solid var(--border);
-            border-radius: 20px; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; font-weight: bold; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .desk-num { position: absolute; top: 8px; left: 12px; font-size: 0.8rem; color: var(--primary); opacity: 0.6; }
-
-        @keyframes shuffle-anim {
-            0% { transform: translate(0,0); }
-            50% { transform: translate(1px, 1px) rotate(0.5deg); }
-            100% { transform: translate(0,0); }
-        }
-        .shuffling { animation: shuffle-anim 0.1s infinite; }
+        /* 결과 화면 */
+        .blackboard { width: 55%; background: var(--board); color: white; padding: 20px; border-radius: 50px 50px 10px 10px; border: 6px solid #5D4037; margin: 0 auto 50px; font-size: 2rem; text-align: center; }
+        .student-desk { width: 140px; height: 95px; background: var(--desk); border: 3px solid var(--border); border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; position: relative; }
+        
+        @keyframes shuffle-anim { 0% { transform: scale(1); } 50% { transform: scale(1.05) rotate(1deg); } 100% { transform: scale(1); } }
+        .shuffling { animation: shuffle-anim 0.1s infinite; border-color: var(--primary); }
     </style>
 </head>
-<body>
+<body class="space-theme"> <div class="space-obj planet p1"></div>
+    <div class="space-obj planet p2"></div>
+    <div class="space-obj ufo">🚀</div>
+    <div class="space-obj ufo" style="animation-delay: -7s; top: 60%; font-size: 2rem;">🛸</div>
 
-<div class="container">
-    <div class="theme-toggle-container">
-        <span>일반</span>
-        <label class="switch">
-            <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
-            <span class="slider"></span>
-        </label>
-        <span>우주 여행</span>
+    <div class="container">
+        <div class="theme-toggle-container">
+            <span>일반</span>
+            <label class="switch">
+                <input type="checkbox" id="theme-switch" checked onchange="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+            <span>우주 여행</span>
+        </div>
+
+        <div class="page-title" id="main-title">🛸 우리 반 우주 여행</div>
+
+        <div id="setup-view" class="config-panel">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn btn-main" onclick="switchMethod('file')">📁 명단 파일 찾기</button>
+                <button class="btn btn-main" onclick="switchMethod('manual')">⌨️ 직접 이름 쓰기</button>
+            </div>
+
+            <div id="file-area" style="text-align: center; border: 2px dashed var(--primary); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+                <input type="file" id="excel-input" accept=".csv" onchange="loadStudents()">
+            </div>
+            <div id="manual-area" style="display:none; margin-bottom: 20px;">
+                <textarea id="manual-input" style="width:96%; height:80px; background:var(--desk); color:var(--text); border-radius:15px; padding:15px; border:1px solid var(--border);" placeholder="이름을 쉼표(,)로 적어주세요!" onblur="syncManualList()"></textarea>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <strong>우리 반 대형:</strong>
+                <select id="layout-select" onchange="updateSecretUI()" style="padding:10px; border-radius:10px; background:var(--desk); color:var(--text); border:1px solid var(--border);">
+                    <option value="2-3">3분단 (2-2-2)</option>
+                    <option value="3-2">2분단 (3-3)</option>
+                    <option value="2-4">4분단 (2-2-2-2)</option>
+                    <option value="1-6">개별 비행 (1-1-1-1-1-1)</option>
+                </select>
+            </div>
+
+            <div id="secret-setup" class="preview-section" style="display:none;">
+                <div style="text-align:center; font-weight:bold; margin-bottom:15px; color:var(--accent);">🔒 선생님 전용 관제소 (자리 미리 지정)</div>
+                <div id="preview-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-accent" style="padding:15px 60px; font-size:1.4rem;" onclick="initClassroom()">탐험 시작!</button>
+            </div>
+        </div>
+
+        <div id="main-view" style="display:none;">
+            <div id="capture-area">
+                <div class="blackboard">정 면 (칠판)</div>
+                <div id="desk-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:40px;"></div>
+            </div>
+            <div class="btn-group" style="text-align:center; margin-top:40px;">
+                <button class="btn btn-accent" id="shuffle-btn" onclick="startShuffle()">✨ 워프 엔진 가동 (섞기)</button>
+                <button class="btn btn-main" style="background:#2ECC71;" onclick="saveAsImage()">📸 우주 지도 저장</button>
+                <button class="btn" style="background:#495057; color:white;" onclick="location.reload()">처음으로</button>
+            </div>
+        </div>
     </div>
-
-    <div class="page-title" id="main-title">우리 반 자리 바꾸기</div>
-
-    <div id="setup-view" class="config-panel">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <button class="btn btn-main" onclick="switchMethod('file')">📁 파일 업로드</button>
-            <button class="btn btn-main" onclick="switchMethod('manual')">⌨️ 직접 입력</button>
-        </div>
-
-        <div id="file-area" class="upload-box">
-            <input type="file" id="excel-input" accept=".csv" onchange="loadStudents()">
-        </div>
-        <div id="manual-area" class="upload-box" style="display:none;">
-            <textarea id="manual-input" placeholder="이름을 쉼표(,)로 구분해 적어주세요!" onblur="syncManualList()"></textarea>
-        </div>
-
-        <div style="text-align: center; margin: 20px 0;">
-            <strong>배치 대형:</strong>
-            <select id="layout-select" onchange="updateSecretUI()" style="padding:10px; border-radius:10px;">
-                <option value="2-3">3분단 (2-2-2)</option>
-                <option value="3-2">2분단 (3-3)</option>
-                <option value="2-4">4분단 (2-2-2-2)</option>
-                <option value="1-6">개별 (1-1-1-1-1-1)</option>
-            </select>
-        </div>
-
-        <div id="secret-setup" class="preview-section" style="display:none;">
-            <div style="text-align:center; font-weight:bold; margin-bottom:10px;">🔒 선생님 비밀 설정 (미리 지정)</div>
-            <div id="preview-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;"></div>
-        </div>
-
-        <div style="text-align: center; margin-top: 30px;">
-            <button class="btn btn-accent" style="padding:15px 50px;" onclick="initClassroom()">배치 화면으로 이동</button>
-        </div>
-    </div>
-
-    <div id="main-view" style="display:none;">
-        <div id="capture-area">
-            <div class="blackboard">정 면 (칠판)</div>
-            <div id="desk-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:40px;"></div>
-        </div>
-        <div class="btn-group" style="text-align:center; margin-top:40px;">
-            <button class="btn btn-accent" id="shuffle-btn" onclick="startShuffle()">✨ 자리 섞기 시작!</button>
-            <button class="btn btn-main" style="background:#2ECC71;" onclick="saveAsImage()">📸 이미지 저장</button>
-            <button class="btn" style="background:#94A3B8; color:white;" onclick="location.reload()">처음으로</button>
-        </div>
-    </div>
-</div>
 
 <script>
     let students = [];
     let fixedSeats = {}; 
-    let currentMethod = 'file';
 
     function toggleTheme() {
         const isSpace = document.getElementById('theme-switch').checked;
@@ -197,7 +158,6 @@
     }
 
     function switchMethod(method) {
-        currentMethod = method;
         document.getElementById('file-area').style.display = method === 'file' ? 'block' : 'none';
         document.getElementById('manual-area').style.display = method === 'manual' ? 'block' : 'none';
     }
@@ -231,8 +191,7 @@
             const bundanDiv = document.createElement('div');
             bundanDiv.style.display = 'grid';
             bundanDiv.style.gridTemplateColumns = `repeat(${colsPerBundan}, 1fr)`;
-            bundanDiv.style.gap = '5px';
-            
+            bundanDiv.style.gap = '8px';
             for(let s = 0; s < studentsPerBundan; s++) {
                 const idx = b * studentsPerBundan + s;
                 if(idx < students.length) {
@@ -240,7 +199,7 @@
                     desk.className = 'preview-desk' + (fixedSeats[idx] ? ' fixed' : '');
                     desk.innerText = fixedSeats[idx] ? fixedSeats[idx] : idx + 1;
                     desk.onclick = () => {
-                        const name = prompt(`[${idx+1}번 자리] 고정할 학생:\n(${students.join(', ')})`);
+                        const name = prompt(`[${idx+1}번 좌석] 고정할 학생 이름:\n(${students.join(', ')})`);
                         if(name && students.includes(name)) fixedSeats[idx] = name;
                         else delete fixedSeats[idx];
                         updateSecretUI();
@@ -253,15 +212,13 @@
     }
 
     function initClassroom() {
-        if(students.length === 0) return alert("학생 명단을 먼저 입력해주세요!");
+        if(students.length === 0) return alert("우주 대원 명단을 입력해주세요!");
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
-        
         const grid = document.getElementById('desk-grid');
         const [colsPerBundan, bundanCount] = document.getElementById('layout-select').value.split('-').map(Number);
         grid.innerHTML = '';
         const studentsPerBundan = Math.ceil(students.length / bundanCount);
-        
         for(let b = 0; b < bundanCount; b++) {
             const bundanDiv = document.createElement('div');
             bundanDiv.style.display = 'grid';
@@ -273,7 +230,7 @@
                     const div = document.createElement('div');
                     div.className = 'student-desk';
                     div.id = `desk-${idx}`;
-                    div.innerHTML = `<span class="desk-num">${idx + 1}</span><span id="name-${idx}">?</span>`;
+                    div.innerHTML = `<span id="name-${idx}">?</span>`;
                     bundanDiv.appendChild(div);
                 }
             }
@@ -309,7 +266,7 @@
             const el = document.getElementById(`name-${i}`);
             if(el) el.innerText = fixedSeats[i] ? fixedSeats[i] : (pool.pop() || "-");
         });
-        document.getElementById('shuffle-btn').innerText = "배치 완료!";
+        document.getElementById('shuffle-btn').innerText = "행성 착륙 완료!";
     }
 
     function saveAsImage() {
@@ -317,7 +274,7 @@
             backgroundColor: getComputedStyle(document.body).backgroundColor
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = '자리배치도.png';
+            link.download = '우리_반_자리_배치도.png';
             link.href = canvas.toDataURL();
             link.click();
         });
