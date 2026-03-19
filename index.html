@@ -9,85 +9,78 @@
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Gaegu:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* 일반 테마 (Default) */
             --primary: #4A90E2; --accent: #FF6B6B; --bg: #F8FAFC; --container-bg: #FFFFFF;
             --desk: #FFFFFF; --board: #2D5A27; --text: #333; --border: #CBD5E1; --font: 'Nanum Gothic', sans-serif;
             --deco-display: none;
         }
-
-        /* 우주 여행 테마 (아기자기한 버전) */
         body.theme-space {
-            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #0B132B; --container-bg: rgba(15, 25, 50, 0.9);
+            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #0B132B; --container-bg: rgba(15, 25, 50, 0.95);
             --desk: rgba(255, 255, 255, 0.15); --board: linear-gradient(135deg, #1A3A1A, #0F2A0F); --text: #FFFFFF; 
-            --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive;
-            --deco-display: block;
+            --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive; --deco-display: block;
         }
 
         body { font-family: var(--font); background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; transition: 0.5s; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 95%; max-width: 950px; max-height: 95vh; background: var(--container-bg); padding: 25px; border-radius: 40px; border: 4px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; z-index: 10; overflow-y: auto; }
+        .container { width: 95%; max-width: 950px; background: var(--container-bg); padding: 25px; border-radius: 40px; border: 4px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; z-index: 10; }
 
-        /* 테마 및 파일 컨트롤 */
-        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .theme-select { padding: 8px 12px; border-radius: 12px; border: 2px solid var(--border); font-family: inherit; cursor: pointer; }
+        /* 1. 테마 토글 버튼 스타일 */
+        .toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .toggle-switch { width: 50px; height: 26px; background: #CBD5E1; border-radius: 13px; position: relative; transition: 0.3s; }
+        .toggle-handle { width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s; }
+        body.theme-space .toggle-switch { background: var(--primary); }
+        body.theme-space .toggle-handle { left: 27px; }
 
-        /* 단계별 제목 */
-        .step-label { display: block; font-size: 1.1rem; font-weight: bold; margin: 15px 0 10px; border-left: 5px solid var(--accent); padding-left: 10px; color: var(--primary); }
-
-        /* 이미지 버튼 레이아웃 (2행 구성) */
-        .layout-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        /* 2. 대형 선택 이미지 버튼 (분단/모둠) */
+        .step-label { display: block; font-weight: bold; margin: 15px 0 10px; border-left: 5px solid var(--accent); padding-left: 10px; }
+        .layout-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .img-btn { 
-            background: var(--desk); border: 3px solid var(--border); border-radius: 15px; padding: 10px; cursor: pointer; 
+            background: var(--desk); border: 2px solid var(--border); border-radius: 12px; padding: 10px; cursor: pointer; 
             text-align: center; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
-        .img-btn:hover { transform: scale(1.03); border-color: var(--primary); }
-        .img-btn.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.15); box-shadow: 0 0 15px rgba(255,107,107,0.2); }
-        .img-btn svg { width: 45px; height: 35px; fill: var(--text); opacity: 0.9; }
-        .img-btn span { font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+        .img-btn.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.1); }
+        .img-btn svg { width: 40px; height: 30px; fill: var(--text); opacity: 0.8; }
+        .img-btn span { font-size: 0.75rem; font-weight: bold; }
 
-        /* 자리 배치 영역 */
-        .blackboard { width: 220px; background: var(--board); color: white; padding: 10px; border-radius: 15px; margin: 0 auto 30px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); border: 4px solid #5D4037; }
-        .desk-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-        .student-desk { width: 95px; height: 60px; background: var(--desk); border: 2px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; box-shadow: 0 4px 0 var(--border); }
+        /* 3. 사전 지정(비밀 관제소) 스타일 */
+        #fixed-panel { padding: 15px; background: rgba(0,0,0,0.05); border-radius: 20px; margin-bottom: 15px; }
+        .preview-slot { width: 45px; height: 35px; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; border-radius: 5px; background: var(--desk); }
+        .preview-slot.fixed { background: var(--accent); color: white; border-style: solid; }
 
-        /* 우주 테마 대형 일러스트 데코 */
-        .deco-obj { display: var(--deco-display); position: fixed; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
-        .ufo-big { font-size: 300px; opacity: 0.15; animation: float-ufo 20s infinite linear; }
-        .planet-cute { font-size: 100px; animation: rotate-slow 30s infinite linear; }
-        
-        @keyframes float-ufo { from { left: -350px; top: 10%; } to { left: 100vw; top: 30%; } }
-        @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        /* 4. 화려한 자리 섞기 애니메이션 */
+        .student-desk { 
+            width: 100px; height: 65px; background: var(--desk); border: 2px solid var(--border); border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .shuffling { transform: rotateY(360deg) scale(1.1); filter: brightness(1.2); }
 
-        .btn-main { background: var(--accent); color: white; padding: 18px; border-radius: 20px; border: none; font-size: 1.3rem; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 0 #E57373; margin-top: 10px; }
-        .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #E57373; }
+        .blackboard { width: 220px; background: var(--board); color: white; padding: 10px; border-radius: 10px; margin: 0 auto 30px; text-align: center; font-weight: bold; border: 3px solid #5D4037; }
+        .deco-obj { display: var(--deco-display); position: fixed; pointer-events: none; z-index: 1; opacity: 0.15; }
+        .btn-main { background: var(--accent); color: white; padding: 15px; border-radius: 15px; border: none; font-size: 1.2rem; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 0 #E57373; }
     </style>
 </head>
-<body class="theme-space"> <div class="deco-obj ufo-big">🛸</div>
-<div class="deco-obj planet-cute" style="top:5%; right:5%; animation: bounce 6s infinite ease-in-out;">🪐</div>
-<div class="deco-obj planet-cute" style="bottom:10%; left:5%; font-size:80px; animation: bounce 8s infinite ease-in-out;">🌍</div>
-<div class="deco-obj planet-cute" style="top:40%; right:10%; font-size:60px; opacity:0.5;">✨</div>
+<body class="theme-space"> <div class="deco-obj" style="font-size:300px; left:-100px; top:10%;">🛸</div>
+<div class="deco-obj" style="font-size:150px; right:50px; top:5%;">🪐</div>
 
 <div class="container">
-    <div class="header-controls">
-        <select class="theme-select" onchange="changeTheme(this.value)">
-            <option value="default" selected>🏫 일반 테마</option>
-            <option value="theme-space">🌌 우주 여행</option>
-        </select>
-        <label style="background:var(--primary); color:white; padding:8px 15px; border-radius:12px; cursor:pointer; font-size:0.9rem; font-weight:bold;">
-            📁 명단 엑셀 업로드
-            <input type="file" accept=".xlsx, .csv" style="display:none;" onchange="handleExcel(event)">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div class="toggle-container" onclick="toggleTheme()">
+            <span style="font-weight:bold; font-size:0.9rem;">🏫 일반</span>
+            <div class="toggle-switch"><div class="toggle-handle" id="handle"></div></div>
+            <span style="font-weight:bold; font-size:0.9rem;">🌌 우주</span>
+        </div>
+        <label style="background:var(--primary); color:white; padding:8px 15px; border-radius:10px; cursor:pointer; font-size:0.8rem; font-weight:bold;">
+            📁 엑셀 명단 업로드 <input type="file" accept=".xlsx, .csv" style="display:none;" onchange="handleExcel(event)">
         </label>
     </div>
 
     <div id="setup-view">
-        <span class="step-label">1. 분단형 대형 선택</span>
+        <span class="step-label">1. 분단형 대형 (상단 행)</span>
         <div class="layout-row">
             <div class="img-btn active" onclick="selectLayout(this, '2-3')">
-                <svg viewBox="0 0 100 60"><rect x="15" y="10" width="20" height="15" rx="3"/><rect x="40" y="10" width="20" height="15" rx="3"/><rect x="65" y="10" width="20" height="15" rx="3"/><rect x="15" y="35" width="20" height="15" rx="3"/><rect x="40" y="35" width="20" height="15" rx="3"/><rect x="65" y="35" width="20" height="15" rx="3"/></svg>
+                <svg viewBox="0 0 100 60"><rect x="15" y="10" width="20" height="15"/><rect x="40" y="10" width="20" height="15"/><rect x="65" y="10" width="20" height="15"/><rect x="15" y="35" width="20" height="15"/><rect x="40" y="35" width="20" height="15"/><rect x="65" y="35" width="20" height="15"/></svg>
                 <span>2-2-2 (3분단)</span>
             </div>
-            <div class="img-btn" onclick="selectLayout(this, '2-3-2')">
-                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="15" height="15"/><rect x="30" y="10" width="15" height="15"/><rect x="55" y="10" width="15" height="15"/><rect x="75" y="10" width="15" height="15"/><rect x="10" y="35" width="15" height="15"/><rect x="30" y="35" width="15" height="15"/><rect x="55" y="35" width="15" height="15"/><rect x="75" y="35" width="15" height="15"/></svg>
+            <div class="img-btn" onclick="selectLayout(this, '2-3-2')"> <svg viewBox="0 0 100 60"><rect x="15" y="10" width="20" height="15"/><rect x="40" y="10" width="20" height="15"/><rect x="65" y="10" width="20" height="15"/><rect x="15" y="35" width="20" height="15"/><rect x="40" y="35" width="20" height="15"/><rect x="65" y="35" width="20" height="15"/></svg>
                 <span>2-3-2</span>
             </div>
             <div class="img-btn" onclick="selectLayout(this, '2-4')">
@@ -95,58 +88,51 @@
                 <span>2-2-2-2 (4분단)</span>
             </div>
             <div class="img-btn" onclick="selectLayout(this, '1-6')">
-                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="10" height="12"/><rect x="25" y="10" width="10" height="12"/><rect x="40" y="10" width="10" height="12"/><rect x="55" y="10" width="10" height="12"/><rect x="70" y="10" width="10" height="12"/><rect x="85" y="10" width="10" height="12"/><rect x="10" y="35" width="10" height="12"/><rect x="25" y="35" width="10" height="12"/><rect x="40" y="35" width="10" height="12"/><rect x="55" y="35" width="10" height="12"/><rect x="70" y="35" width="10" height="12"/><rect x="85" y="35" width="10" height="12"/></svg>
+                <svg viewBox="0 0 100 60"><rect x="5" y="15" width="10" height="10"/><rect x="20" y="15" width="10" height="10"/><rect x="35" y="15" width="10" height="10"/><rect x="50" y="15" width="10" height="10"/><rect x="65" y="15" width="10" height="10"/><rect x="80" y="15" width="10" height="10"/></svg>
                 <span>1-1-1-1-1-1</span>
             </div>
         </div>
 
-        <span class="step-label">2. 모둠형 대형 선택</span>
+        <span class="step-label">2. 모둠형 대형 (하단 행)</span>
         <div class="layout-row">
-            <div class="img-btn" onclick="selectLayout(this, '2-m')">
-                <svg viewBox="0 0 100 60"><circle cx="40" cy="30" r="10"/><circle cx="65" cy="30" r="10"/></svg>
-                <span>2인 모둠</span>
-            </div>
-            <div class="img-btn" onclick="selectLayout(this, '4-m')">
-                <svg viewBox="0 0 100 60"><rect x="25" y="10" width="20" height="18" rx="4"/><rect x="55" y="10" width="20" height="18" rx="4"/><rect x="25" y="32" width="20" height="18" rx="4"/><rect x="55" y="32" width="20" height="18" rx="4"/></svg>
-                <span>4인 모둠</span>
-            </div>
-            <div class="img-btn" onclick="selectLayout(this, '5-m')">
-                <svg viewBox="0 0 100 60"><circle cx="30" cy="18" r="8"/><circle cx="70" cy="18" r="8"/><circle cx="20" cy="42" r="8"/><circle cx="50" cy="42" r="8"/><circle cx="80" cy="42" r="8"/></svg>
-                <span>5인 모둠</span>
-            </div>
-            <div class="img-btn" onclick="selectLayout(this, '6-m')">
-                <svg viewBox="0 0 100 60"><circle cx="25" cy="15" r="8"/><circle cx="50" cy="15" r="8"/><circle cx="75" cy="15" r="8"/><circle cx="25" cy="45" r="8"/><circle cx="50" cy="45" r="8"/><circle cx="75" cy="45" r="8"/></svg>
-                <span>6인 모둠</span>
+            <div class="img-btn" onclick="selectLayout(this, '2-m')"><span>2인 모둠</span></div>
+            <div class="img-btn" onclick="selectLayout(this, '4-m')"><span>4인 모둠</span></div>
+            <div class="img-btn" onclick="selectLayout(this, '5-m')"><span>5인 모둠</span></div>
+            <div class="img-btn" onclick="selectLayout(this, '6-m')"><span>6인 모둠</span></div>
+        </div>
+
+        <span class="step-label">3. 자리 미리 지정 (선택사항)</span>
+        <div id="fixed-panel">
+            <div id="preview-grid" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
+                <p style="font-size:0.8rem; color:var(--text); opacity:0.6;">명단을 입력하면 미리 지정 가능합니다.</p>
             </div>
         </div>
 
-        <span class="step-label">3. 명단 입력</span>
-        <textarea id="name-input" style="width:100%; height:70px; margin-top:5px; border-radius:15px; border:2px solid var(--border); padding:12px; font-family:inherit;" placeholder="이름을 직접 입력하거나 엑셀 파일을 업로드하세요."></textarea>
-        
-        <button class="btn-main" onclick="startLayout()">자리 바꾸기 시작!</button>
+        <textarea id="name-input" style="width:100%; height:60px; border-radius:10px; border:2px solid var(--border); padding:10px; font-family:inherit;" placeholder="이름을 입력하세요 (쉼표 구분)" onblur="syncStudents()"></textarea>
+        <button class="btn-main" style="margin-top:15px;" onclick="startLayout()">자리 배치 시작하기</button>
     </div>
 
     <div id="main-view" style="display:none;">
-        <div id="capture-area" style="padding:10px;">
+        <div id="capture-area">
             <div class="blackboard">정 면 (칠판)</div>
-            <div id="desk-grid" class="desk-area"></div>
+            <div id="desk-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:15px;"></div>
         </div>
-        <div style="display:flex; gap:10px; margin-top:25px;">
-            <button class="btn-main" onclick="shuffle()">✨ 다시 섞기</button>
-            <button class="btn-main" style="background:#2ECC71; box-shadow: 0 5px 0 #27AE60;" onclick="saveImage()">📸 이미지 저장</button>
-            <button class="btn-main" style="background:#95A5A6; box-shadow: 0 5px 0 #7F8C8D;" onclick="location.reload()">🔄 처음으로</button>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-main" onclick="shuffle()">✨ 자리 섞기</button>
+            <button class="btn-main" style="background:#2ECC71; box-shadow:0 4px 0 #27AE60;" onclick="saveImage()">📸 저장</button>
+            <button class="btn-main" style="background:#95A5A6; box-shadow:0 4px 0 #7F8C8D;" onclick="location.reload()">🔄 초기화</button>
         </div>
     </div>
 </div>
 
 <script>
     let students = [];
+    let fixedSeats = {};
     let currentLayout = '2-3';
 
-    function changeTheme(theme) {
-        document.body.className = theme === 'default' ? '' : theme;
-        const isSpace = theme === 'theme-space';
-        document.querySelectorAll('.deco-obj').forEach(obj => obj.style.display = isSpace ? 'block' : 'none');
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('theme-space');
     }
 
     function handleExcel(event) {
@@ -155,10 +141,9 @@
         reader.onload = (e) => {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-            students = json.flat().filter(n => n && n.toString().trim() !== "");
+            students = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1}).flat().filter(n => n);
             document.getElementById('name-input').value = students.join(', ');
+            syncStudents();
         };
         reader.readAsArrayBuffer(file);
     }
@@ -167,11 +152,31 @@
         document.querySelectorAll('.img-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentLayout = type;
+        syncStudents();
+    }
+
+    function syncStudents() {
+        const input = document.getElementById('name-input').value;
+        students = input.split(/[,\s\n]+/).filter(s => s.trim());
+        const grid = document.getElementById('preview-grid');
+        grid.innerHTML = '';
+        if(students.length === 0) return;
+
+        students.forEach((_, i) => {
+            const slot = document.createElement('div');
+            slot.className = `preview-slot ${fixedSeats[i] ? 'fixed' : ''}`;
+            slot.innerText = fixedSeats[i] || i + 1;
+            slot.onclick = () => {
+                const name = prompt("이 자리에 고정할 학생 이름을 입력하세요:", students.join(', '));
+                if(name && students.includes(name)) fixedSeats[i] = name;
+                else delete fixedSeats[i];
+                syncStudents();
+            };
+            grid.appendChild(slot);
+        });
     }
 
     function startLayout() {
-        const input = document.getElementById('name-input').value;
-        students = input.split(/[,\s\n]+/).filter(s => s.trim());
         if(!students.length) return alert("학생 명단을 입력해주세요!");
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
@@ -181,62 +186,55 @@
     function renderDesks() {
         const grid = document.getElementById('desk-grid');
         grid.innerHTML = '';
+        let groupSize = currentLayout.includes('-m') ? parseInt(currentLayout) : (currentLayout === '1-6' ? 1 : 2);
         
-        let groupSize;
-        if(currentLayout === '2-3') groupSize = 2;
-        else if(currentLayout === '2-3-2') groupSize = 2;
-        else if(currentLayout === '2-4') groupSize = 2;
-        else if(currentLayout === '1-6') groupSize = 1;
-        else groupSize = parseInt(currentLayout);
+        for(let i=0; i < Math.ceil(students.length / groupSize); i++) {
+            const group = document.createElement('div');
+            group.style.display = 'grid';
+            group.style.gridTemplateColumns = `repeat(${currentLayout === '5-m' || currentLayout === '6-m' ? 3 : (currentLayout === '1-6' ? 1 : 2)}, 1fr)`;
+            group.style.gap = '10px';
+            group.style.padding = '10px';
+            group.style.border = '2px dashed var(--border)';
+            group.style.borderRadius = '15px';
 
-        const groupCount = Math.ceil(students.length / groupSize);
-
-        for(let i=0; i<groupCount; i++) {
-            const groupDiv = document.createElement('div');
-            groupDiv.style.cssText = "display:grid; gap:10px; padding:12px; border:2px dashed var(--border); border-radius:20px;";
-            
-            let cols = 2;
-            if(currentLayout === '1-6') cols = 1;
-            if(currentLayout === '5-m') cols = 3;
-            if(currentLayout === '6-m') cols = 3;
-            
-            groupDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            
             for(let j=0; j<groupSize; j++) {
-                if(i * groupSize + j < students.length) {
+                const idx = i * groupSize + j;
+                if(idx < students.length) {
                     const d = document.createElement('div');
                     d.className = 'student-desk';
-                    d.id = `desk-${i * groupSize + j}`;
+                    d.id = `desk-${idx}`;
                     d.innerText = '?';
-                    groupDiv.appendChild(d);
+                    group.appendChild(d);
                 }
             }
-            grid.appendChild(groupDiv);
+            grid.appendChild(group);
         }
         shuffle();
     }
 
     function shuffle() {
-        const shuffled = [...students].sort(() => Math.random() - 0.5);
-        students.forEach((_, i) => {
-            const el = document.getElementById(`desk-${i}`);
-            if(el) el.innerText = shuffled[i];
-        });
+        const desks = document.querySelectorAll('.student-desk');
+        desks.forEach(d => d.classList.add('shuffling'));
+
+        setTimeout(() => {
+            const fixedNames = Object.values(fixedSeats);
+            let pool = students.filter(s => !fixedNames.includes(s)).sort(() => Math.random() - 0.5);
+            
+            students.forEach((_, i) => {
+                const el = document.getElementById(`desk-${i}`);
+                if(el) {
+                    el.innerText = fixedSeats[i] ? fixedSeats[i] : pool.pop();
+                    el.classList.remove('shuffling');
+                }
+            });
+        }, 600);
     }
 
     function saveImage() {
-        html2canvas(document.getElementById('capture-area'), { 
-            backgroundColor: getComputedStyle(document.body).backgroundColor
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = '배치도.png';
-            link.href = canvas.toDataURL();
-            link.click();
+        html2canvas(document.getElementById('capture-area'), { backgroundColor: getComputedStyle(document.body).backgroundColor }).then(canvas => {
+            const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = '자리배치도.png'; a.click();
         });
     }
-
-    // 초기 테마 설정 (일반 테마가 기본)
-    changeTheme('default');
 </script>
 </body>
 </html>
