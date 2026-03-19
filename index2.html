@@ -4,182 +4,171 @@
     <meta charset="UTF-8">
     <title>우리반 자리바꾸기</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* 기본 변수 (일반 테마) */
         :root {
-            --space-bg: #0B132B; /* Walkr 특유의 심해 우주색 */
-            --neon-blue: #5BC0BE;
-            --neon-pink: #FF6B6B;
-            --star-yellow: #F9D423;
-            --desk-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --primary: #4A90E2;
+            --accent: #FF6B6B;
+            --bg: #F8FAFC;
+            --container-bg: #FFFFFF;
+            --desk: #FFFFFF;
+            --board: #2D5A27;
+            --text: #333;
+            --border: #CBD5E1;
+            --font: 'Nanum Gothic', sans-serif;
+        }
+
+        /* 우주 테마 변수 */
+        body.space-theme {
+            --primary: #5BC0BE;
+            --accent: #FF6B6B;
+            --bg: #0B132B;
+            --container-bg: rgba(255, 255, 255, 0.05);
+            --desk: rgba(255, 255, 255, 0.1);
+            --board: linear-gradient(135deg, #2D5A27, #1E3A1A);
+            --text: #FFFFFF;
+            --border: rgba(255, 255, 255, 0.2);
+            --font: 'Gaegu', cursive;
         }
 
         body {
-            font-family: 'Gaegu', cursive; /* 아기자기한 손글씨체 */
-            background-color: var(--space-bg);
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        /* 우주 배경 효과 */
+        body.space-theme {
             background-image: 
                 radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
                 radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
             background-size: 550px 550px, 350px 350px;
-            background-position: 0 0, 40px 60px;
-            color: white;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1000px;
-            margin: auto;
+            max-width: 1100px; margin: auto;
+            background: var(--container-bg);
             backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px;
-            border-radius: 40px;
-            border: 2px solid var(--glass-border);
-            box-shadow: 0 0 30px rgba(91, 192, 190, 0.2);
+            padding: 40px; border-radius: 40px;
+            border: 2px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
 
-        .page-title {
-            font-size: 3rem;
-            text-align: center;
-            color: var(--star-yellow);
-            text-shadow: 0 0 15px rgba(249, 212, 35, 0.5);
-            margin-bottom: 40px;
+        /* 테마 토글 스위치 */
+        .theme-toggle-container {
+            display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 20px;
         }
-
-        /* 버튼 디자인 (Walkr 스타일) */
-        .btn {
-            padding: 12px 30px;
-            border-radius: 25px;
-            border: none;
-            font-family: 'Gaegu', cursive;
-            font-size: 1.4rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            margin: 5px;
+        .switch {
+            position: relative; display: inline-block; width: 60px; height: 30px;
         }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #5BC0BE; }
+        input:checked + .slider:before { transform: translateX(30px); }
 
-        .btn-main { background: var(--neon-blue); color: var(--space-bg); }
-        .btn-accent { background: var(--neon-pink); color: white; box-shadow: 0 0 15px rgba(255, 107, 107, 0.4); }
-        .btn-save { background: #69DB7C; color: var(--space-bg); }
-        .btn:hover { transform: scale(1.1) rotate(-2deg); }
+        .page-title { font-size: 2.5rem; text-align: center; font-weight: bold; margin-bottom: 30px; }
+        body.space-theme .page-title { color: #F9D423; text-shadow: 0 0 10px rgba(249, 212, 35, 0.5); }
 
         /* 설정 박스 */
         .config-panel {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 25px;
-            border-radius: 30px;
-            border: 1px solid var(--glass-border);
+            background: rgba(128, 128, 128, 0.05);
+            padding: 25px; border-radius: 30px; border: 1px solid var(--border);
         }
 
-        #manual-input {
-            width: 100%; height: 100px;
-            background: rgba(0,0,0,0.3);
-            color: white;
-            border: 1px solid var(--neon-blue);
-            border-radius: 15px;
-            padding: 15px;
-            font-family: inherit;
-        }
+        .upload-box { border: 2px dashed var(--primary); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        textarea { width: 100%; height: 80px; border-radius: 15px; padding: 15px; font-family: inherit; border: 1px solid var(--border); background: var(--desk); color: var(--text); }
 
-        /* 비밀 설정 프리뷰 (아기자기한 우주선 배치) */
-        .preview-section {
-            background: rgba(91, 192, 190, 0.1);
-            border: 1px solid var(--neon-blue);
-            border-radius: 25px;
-            padding: 20px;
-            margin: 20px 0;
+        /* 버튼 */
+        .btn {
+            padding: 12px 30px; border-radius: 30px; border: none; font-family: inherit;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 5px;
         }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
 
+        /* 자리 배치 영역 */
+        .preview-section { background: rgba(255, 255, 0, 0.1); border-radius: 25px; padding: 20px; margin: 20px 0; border: 1px solid var(--border); }
         .preview-desk {
-            width: 80px; height: 50px;
-            background: var(--desk-bg);
-            border: 1px dashed var(--neon-blue);
-            border-radius: 15px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; cursor: pointer; color: var(--neon-blue);
+            width: 80px; height: 50px; background: var(--desk); border: 1px solid var(--border);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem;
         }
-        .preview-desk.fixed {
-            background: var(--neon-pink);
-            color: white; border-style: solid;
-        }
+        .preview-desk.fixed { background: var(--accent); color: white; }
 
-        /* 배치 화면 */
         .blackboard {
-            width: 50%;
-            background: linear-gradient(135deg, #2D5A27, #1E3A1A);
-            color: var(--star-yellow);
-            padding: 15px;
-            border-radius: 50px 50px 10px 10px;
-            border: 4px solid #5D4037;
-            margin: 0 auto 50px;
-            font-size: 2rem;
-            text-align: center;
+            width: 60%; background: var(--board); color: white; padding: 20px;
+            border-radius: 50px 50px 10px 10px; border: 5px solid #5D4037;
+            margin: 0 auto 50px; font-size: 2rem; text-align: center;
         }
 
-        .bundan { display: grid; gap: 15px; }
         .student-desk {
-            width: 130px; height: 90px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid var(--glass-border);
-            border-radius: 25px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            font-size: 1.8rem;
-            position: relative;
-            transition: all 0.4s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 140px; height: 95px; background: var(--desk); border: 2px solid var(--border);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: bold; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        /* 섞을 때 흔들리는 애니메이션 */
-        @keyframes wobble {
-            0% { transform: translate(0, 0) rotate(0); }
-            25% { transform: translate(-2px, -2px) rotate(-1deg); }
-            75% { transform: translate(2px, 2px) rotate(1deg); }
-            100% { transform: translate(0, 0) rotate(0); }
-        }
-        .shuffling { animation: wobble 0.1s infinite; border-color: var(--neon-blue); }
+        .desk-num { position: absolute; top: 8px; left: 12px; font-size: 0.8rem; color: var(--primary); opacity: 0.6; }
 
-        .desk-num { position: absolute; top: 10px; left: 15px; font-size: 0.8rem; color: var(--neon-blue); opacity: 0.7; }
+        @keyframes shuffle-anim {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(1px, 1px) rotate(0.5deg); }
+            100% { transform: translate(0,0); }
+        }
+        .shuffling { animation: shuffle-anim 0.1s infinite; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="page-title">🛸 우리반 우주 여행</div>
+    <div class="theme-toggle-container">
+        <span>일반</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
+            <span class="slider"></span>
+        </label>
+        <span>우주 여행</span>
+    </div>
+
+    <div class="page-title" id="main-title">우리반 자리바꾸기</div>
 
     <div id="setup-view" class="config-panel">
         <div style="text-align: center; margin-bottom: 20px;">
-            <button class="btn btn-main" onclick="switchMethod('file')">📁 파일 전송</button>
-            <button class="btn btn-main" onclick="switchMethod('manual')">⌨️ 이름 적기</button>
+            <button class="btn btn-main" onclick="switchMethod('file')">📁 파일 업로드</button>
+            <button class="btn btn-main" onclick="switchMethod('manual')">⌨️ 직접 입력</button>
         </div>
 
-        <div id="file-area" class="upload-box" style="text-align:center;">
+        <div id="file-area" class="upload-box">
             <input type="file" id="excel-input" accept=".csv" onchange="loadStudents()">
-            <p style="font-size:0.9rem; opacity:0.7;">명단 파일을 블랙홀에 쏙 넣어주세요!</p>
         </div>
         <div id="manual-area" class="upload-box" style="display:none;">
-            <textarea id="manual-input" placeholder="친구들 이름을 쉼표로 적고 칸 밖을 눌러주세요!" onblur="syncManualList()"></textarea>
+            <textarea id="manual-input" placeholder="이름을 쉼표(,)로 구분해 적어주세요!" onblur="syncManualList()"></textarea>
         </div>
 
         <div style="text-align: center; margin: 20px 0;">
-            <span style="font-size: 1.2rem;">🚀 비행 대형: </span>
-            <select id="layout-select" onchange="updateSecretUI()" style="background:var(--space-bg); color:white; border:1px solid var(--neon-blue); padding:8px; border-radius:10px; font-family:inherit;">
+            <strong>배치 대형:</strong>
+            <select id="layout-select" onchange="updateSecretUI()" style="padding:10px; border-radius:10px;">
                 <option value="2-3">3분단 (2-2-2)</option>
                 <option value="3-2">2분단 (3-3)</option>
                 <option value="2-4">4분단 (2-2-2-2)</option>
-                <option value="1-6">개별 비행 (1-1-1-1-1-1)</option>
+                <option value="1-6">개별 (1-1-1-1-1-1)</option>
             </select>
         </div>
 
         <div id="secret-setup" class="preview-section" style="display:none;">
-            <div style="text-align:center; font-size:1.1rem; color:var(--star-yellow); margin-bottom:15px;">🔒 선생님 비밀 관제소</div>
-            <div id="preview-grid" class="preview-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;"></div>
+            <div style="text-align:center; font-weight:bold; margin-bottom:10px;">🔒 선생님 비밀 설정 (미리 지정)</div>
+            <div id="preview-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px;"></div>
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn btn-accent" style="padding:15px 50px;" onclick="initClassroom()">탐험 준비 완료!</button>
+            <button class="btn btn-accent" style="padding:15px 50px;" onclick="initClassroom()">배치 화면으로 이동</button>
         </div>
     </div>
 
@@ -189,9 +178,9 @@
             <div id="desk-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:40px;"></div>
         </div>
         <div class="btn-group" style="text-align:center; margin-top:40px;">
-            <button class="btn btn-accent" id="shuffle-btn" onclick="startShuffle()">✨ 워프 가동! (섞기)</button>
-            <button class="btn btn-save" onclick="saveAsImage()">📸 기록 저장</button>
-            <button class="btn" style="background:#495057; color:white;" onclick="location.reload()">처음으로</button>
+            <button class="btn btn-accent" id="shuffle-btn" onclick="startShuffle()">✨ 자리 섞기 시작!</button>
+            <button class="btn btn-main" style="background:#2ECC71;" onclick="saveAsImage()">📸 이미지 저장</button>
+            <button class="btn" style="background:#94A3B8; color:white;" onclick="location.reload()">처음으로</button>
         </div>
     </div>
 </div>
@@ -200,6 +189,12 @@
     let students = [];
     let fixedSeats = {}; 
     let currentMethod = 'file';
+
+    function toggleTheme() {
+        const isSpace = document.getElementById('theme-switch').checked;
+        document.body.className = isSpace ? 'space-theme' : '';
+        document.getElementById('main-title').innerText = isSpace ? '🛸 우리반 우주 여행' : '🏫 우리반 자리바꾸기';
+    }
 
     function switchMethod(method) {
         currentMethod = method;
@@ -234,7 +229,6 @@
 
         for(let b = 0; b < bundanCount; b++) {
             const bundanDiv = document.createElement('div');
-            bundanDiv.className = `bundan`;
             bundanDiv.style.display = 'grid';
             bundanDiv.style.gridTemplateColumns = `repeat(${colsPerBundan}, 1fr)`;
             bundanDiv.style.gap = '5px';
@@ -246,7 +240,7 @@
                     desk.className = 'preview-desk' + (fixedSeats[idx] ? ' fixed' : '');
                     desk.innerText = fixedSeats[idx] ? fixedSeats[idx] : idx + 1;
                     desk.onclick = () => {
-                        const name = prompt(`[${idx+1}번 좌석] 고정할 대원 이름:\n(${students.join(', ')})`);
+                        const name = prompt(`[${idx+1}번 자리] 고정할 학생:\n(${students.join(', ')})`);
                         if(name && students.includes(name)) fixedSeats[idx] = name;
                         else delete fixedSeats[idx];
                         updateSecretUI();
@@ -259,7 +253,7 @@
     }
 
     function initClassroom() {
-        if(students.length === 0) return alert("우주선에 탈 명단을 먼저 알려주세요!");
+        if(students.length === 0) return alert("학생 명단을 먼저 입력해주세요!");
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
         
@@ -270,7 +264,6 @@
         
         for(let b = 0; b < bundanCount; b++) {
             const bundanDiv = document.createElement('div');
-            bundanDiv.className = `bundan`;
             bundanDiv.style.display = 'grid';
             bundanDiv.style.gridTemplateColumns = `repeat(${colsPerBundan}, 1fr)`;
             bundanDiv.style.gap = '15px';
@@ -279,7 +272,7 @@
                 if(idx < students.length) {
                     const div = document.createElement('div');
                     div.className = 'student-desk';
-                    div.id = `desk-unit-${idx}`;
+                    div.id = `desk-${idx}`;
                     div.innerHTML = `<span class="desk-num">${idx + 1}</span><span id="name-${idx}">?</span>`;
                     bundanDiv.appendChild(div);
                 }
@@ -292,7 +285,6 @@
         const btn = document.getElementById('shuffle-btn');
         btn.disabled = true;
         let count = 0;
-        
         const desks = document.querySelectorAll('.student-desk');
         desks.forEach(d => d.classList.add('shuffling'));
 
@@ -315,20 +307,17 @@
         let pool = students.filter(s => !fixedNames.includes(s)).sort(() => Math.random() - 0.5);
         students.forEach((_, i) => {
             const el = document.getElementById(`name-${i}`);
-            if(el) {
-                el.innerText = fixedSeats[i] ? fixedSeats[i] : (pool.pop() || "-");
-                if(fixedSeats[i]) {
-                    el.parentElement.style.boxShadow = "0 0 20px rgba(91, 192, 190, 0.5)";
-                }
-            }
+            if(el) el.innerText = fixedSeats[i] ? fixedSeats[i] : (pool.pop() || "-");
         });
-        document.getElementById('shuffle-btn').innerText = "탐험지 도착!";
+        document.getElementById('shuffle-btn').innerText = "배치 완료!";
     }
 
     function saveAsImage() {
-        html2canvas(document.getElementById('capture-area'), {backgroundColor: "#0B132B"}).then(canvas => {
+        html2canvas(document.getElementById('capture-area'), {
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
             const link = document.createElement('a');
-            link.download = '우리반_자리배치도_우주버전.png';
+            link.download = '자리배치도.png';
             link.href = canvas.toDataURL();
             link.click();
         });
