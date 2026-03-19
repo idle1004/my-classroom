@@ -5,242 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우리 반 자리 바꾸기</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Gamja+Flower&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4A90E2; --accent: #FF6B6B; --bg: #F8FAFC; --container-bg: #FFFFFF;
             --desk: #FFFFFF; --board: #2D5A27; --text: #333; --border: #CBD5E1; --font: 'Nanum Gothic', sans-serif;
         }
-
-        /* 우주 여행 테마 */
         body.theme-space {
-            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #050A18;
-            --container-bg: rgba(10, 20, 40, 0.85); --desk: rgba(255, 255, 255, 0.15);
-            --board: linear-gradient(135deg, #1A3A1A, #0F2A0F); --text: #FFFFFF;
-            --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive;
+            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #050A18; --container-bg: rgba(10, 20, 40, 0.9);
+            --desk: rgba(255, 255, 255, 0.15); --board: #1A3A1A; --text: #FFFFFF; --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive;
         }
-
-        /* 달콤한 쿠키 테마 */
         body.theme-cookie {
-            --primary: #D2B48C; --accent: #E67E22; --bg: #FFF9F0;
-            --container-bg: #FFF5E6; --desk: #FFFFFF;
-            --board: #8B4513; --text: #5D4037;
-            --border: #F3D5B5; --font: 'Gamja Flower', cursive;
+            --primary: #D2B48C; --accent: #E67E22; --bg: #FFF9F0; --container-bg: #FFF5E6;
+            --desk: #FFFFFF; --board: #8B4513; --text: #5D4037; --border: #F3D5B5; --font: 'Gamja Flower', cursive;
         }
 
-        body {
-            font-family: var(--font); background-color: var(--bg); color: var(--text);
-            margin: 0; padding: 10px; transition: all 0.5s ease;
-            display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden;
+        body { font-family: var(--font); background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; transition: 0.5s; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { width: 95%; max-width: 900px; background: var(--container-bg); padding: 30px; border-radius: 30px; border: 3px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
+
+        /* 테마/파일 업로드 섹션 */
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .file-upload-label { background: var(--primary); color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
+
+        /* 이미지 버튼 스타일 (가이드 UI 반영) */
+        .step-title { font-weight: bold; margin-bottom: 10px; display: block; border-left: 4px solid var(--accent); padding-left: 10px; }
+        .layout-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .img-btn { 
+            background: var(--desk); border: 2px solid var(--border); border-radius: 15px; padding: 10px; cursor: pointer; 
+            text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
+        .img-btn:hover { border-color: var(--primary); }
+        .img-btn.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.1); box-shadow: 0 0 10px rgba(255,107,107,0.2); }
+        .img-btn svg { width: 60px; height: 40px; fill: var(--text); opacity: 0.8; }
+        .img-btn span { font-size: 0.85rem; font-weight: bold; }
 
-        /* --- 우주선 애니메이션 --- */
-        .giant-ship {
-            display: none; position: fixed; font-size: 400px; z-index: 1; pointer-events: none;
-            opacity: 0.15; filter: drop-shadow(0 0 50px rgba(91, 192, 190, 0.4));
-        }
-        body.theme-space .giant-ship { display: block; animation: slow-fly 40s infinite linear; }
+        /* 자리 배치 영역 */
+        .blackboard { width: 200px; background: var(--board); color: white; padding: 10px; border-radius: 10px; margin: 0 auto 30px; text-align: center; font-weight: bold; }
+        .desk-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .student-desk { width: 100px; height: 60px; background: var(--desk); border: 2px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; }
 
-        /* --- 쿠키 테마 장식 --- */
-        .cookie-deco { display: none; position: fixed; font-size: 50px; z-index: 1; pointer-events: none; }
-        body.theme-cookie .cookie-deco { display: block; animation: float 6s infinite ease-in-out; }
-
-        @keyframes slow-fly {
-            0% { transform: translate(-100%, 20%) rotate(5deg); }
-            50% { transform: translate(100vw, 50%) rotate(-5deg); }
-            100% { transform: translate(-100%, 20%) rotate(5deg); }
-        }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-
-        .container {
-            width: 95%; max-width: 1100px; max-height: 92vh;
-            background: var(--container-bg); backdrop-filter: blur(15px);
-            padding: 25px; border-radius: 35px; border: 3px solid var(--border);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow-y: auto; position: relative; z-index: 10;
-        }
-
-        /* 테마 선택 라디오 버튼 */
-        .theme-selector { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
-        .theme-opt { cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; }
-
-        /* 대형 버튼 그룹 */
-        .layout-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 5px; }
-        .layout-btn { 
-            flex: 1; min-width: 90px; padding: 10px; border: 2px solid var(--border); 
-            background: var(--desk); color: var(--text); border-radius: 12px; 
-            cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.3s;
-        }
-        .layout-btn.active { border-color: var(--accent); background: var(--accent); color: white; }
-
-        /* 책상 디자인 */
-        .blackboard { width: 200px; background: var(--board); color: white; padding: 10px; border-radius: 15px; border: 4px solid #5D4037; margin: 0 auto 25px; text-align: center; font-size: 1.4rem; }
-        .grid-layout { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; }
-        .student-desk { 
-            width: clamp(85px, 12vw, 135px); height: 75px; background: var(--desk); 
-            border: 3px solid var(--border); border-radius: 20px; 
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; 
-        }
-
-        .btn { padding: 15px 30px; border-radius: 30px; border: none; font-family: inherit; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-accent { background: var(--accent); color: white; }
+        .giant-ship { display: none; position: fixed; font-size: 300px; opacity: 0.1; pointer-events: none; z-index: 1; }
+        body.theme-space .giant-ship { display: block; animation: fly 30s infinite linear; }
+        @keyframes fly { from { left: -400px; top: 20%; } to { left: 100vw; top: 50%; } }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button.main-action { flex: 1; padding: 15px; border-radius: 15px; border: none; background: var(--accent); color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body class="theme-space"> <div class="giant-ship">🛸</div>
-    <div class="cookie-deco" style="top:10%; left:5%;">🍪</div>
-    <div class="cookie-deco" style="bottom:10%; right:5%; font-size:70px;">🧁</div>
-    <div class="cookie-deco" style="top:20%; right:10%;">🥨</div>
+<body class="theme-space">
 
-    <div class="container">
-        <header style="text-align: center; margin-bottom: 20px;">
-            <div class="theme-selector">
-                <label class="theme-opt"><input type="radio" name="theme" value="default" onchange="changeTheme('default')"> 🏫 일반</label>
-                <label class="theme-opt"><input type="radio" name="theme" value="theme-space" checked onchange="changeTheme('theme-space')"> 🛸 우주</label>
-                <label class="theme-opt"><input type="radio" name="theme" value="theme-cookie" onchange="changeTheme('theme-cookie')"> 🍪 쿠키</label>
+<div class="giant-ship">🛸</div>
+
+<div class="container">
+    <div class="header-controls">
+        <select onchange="changeTheme(this.value)" style="padding:5px; border-radius:5px; font-family:inherit;">
+            <option value="theme-space">🌌 우주 여행</option>
+            <option value="theme-cookie">🍪 달콤 쿠키</option>
+            <option value="default">🏫 일반 테마</option>
+        </select>
+        <label class="file-upload-label">
+            📁 명단 엑셀 업로드
+            <input type="file" id="excel-input" accept=".xlsx, .csv" style="display:none;" onchange="handleExcel(event)">
+        </label>
+    </div>
+
+    <div id="setup-view">
+        <span class="step-title">1단계: 자리 대형 선택 (분단/모둠)</span>
+        <div class="layout-grid">
+            <div class="img-btn active" onclick="selectLayout(this, '2-3')">
+                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="20" height="15"/><rect x="40" y="10" width="20" height="15"/><rect x="70" y="10" width="20" height="15"/><rect x="10" y="35" width="20" height="15"/><rect x="40" y="35" width="20" height="15"/><rect x="70" y="35" width="20" height="15"/></svg>
+                <span>3분단 (2-2-2)</span>
             </div>
-            <h1 id="main-title" style="font-size: 2.2rem; margin: 0;">우리 반 우주 여행</h1>
-        </header>
-
-        <div id="setup-view">
-            <div style="text-align: center; margin-bottom: 15px;">
-                <textarea id="manual-input" style="width:100%; height:50px; border-radius:15px; padding:10px; font-family:inherit; background:var(--desk); color:var(--text); border:1px solid var(--border);" placeholder="학생 이름을 쉼표로 구분하여 입력하세요..." onblur="syncStudents()"></textarea>
+            <div class="img-btn" onclick="selectLayout(this, '3-m')">
+                <svg viewBox="0 0 100 60"><circle cx="30" cy="20" r="8"/><circle cx="70" cy="20" r="8"/><circle cx="50" cy="45" r="8"/></svg>
+                <span>3인 모둠</span>
             </div>
-
-            <div style="margin-bottom: 15px;">
-                <div style="font-size: 0.9rem; font-weight: bold; text-align: center; color: var(--primary);">[ 분단형 대형 ]</div>
-                <div class="layout-group">
-                    <button class="layout-btn active" onclick="setLayout(this, '2-3')">3분단</button>
-                    <button class="layout-btn" onclick="setLayout(this, '2-4')">4분단</button>
-                    <button class="layout-btn" onclick="setLayout(this, '1-6')">개별</button>
-                </div>
-                <div style="font-size: 0.9rem; font-weight: bold; text-align: center; color: var(--primary); margin-top: 10px;">[ 모둠형 대형 ]</div>
-                <div class="layout-group">
-                    <button class="layout-btn" onclick="setLayout(this, '3-m')">3인</button>
-                    <button class="layout-btn" onclick="setLayout(this, '4-m')">4인</button>
-                    <button class="layout-btn" onclick="setLayout(this, '5-m')">5인</button>
-                    <button class="layout-btn" onclick="setLayout(this, '6-m')">6인</button>
-                </div>
+            <div class="img-btn" onclick="selectLayout(this, '4-m')">
+                <svg viewBox="0 0 100 60"><rect x="25" y="10" width="15" height="15"/><rect x="60" y="10" width="15" height="15"/><rect x="25" y="35" width="15" height="15"/><rect x="60" y="35" width="15" height="15"/></svg>
+                <span>4인 모둠</span>
             </div>
-
-            <div id="secret-panel" style="display:none; padding:15px; background:rgba(255,100,100,0.1); border-radius:20px; border:1px dashed var(--accent); margin-bottom: 15px;">
-                <p style="text-align:center; font-weight:bold; color:var(--accent); margin:0 0 10px 0;">🔒 비밀 관제소 (클릭하여 고정)</p>
-                <div id="preview-grid" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px;"></div>
+            <div class="img-btn" onclick="selectLayout(this, '6-m')">
+                <svg viewBox="0 0 100 60"><circle cx="20" cy="15" r="7"/><circle cx="50" cy="15" r="7"/><circle cx="80" cy="15" r="7"/><circle cx="20" cy="45" r="7"/><circle cx="50" cy="45" r="7"/><circle cx="80" cy="45" r="7"/></svg>
+                <span>6인 모둠</span>
             </div>
-
-            <button class="btn btn-accent" style="width: 100%;" onclick="startApp()">탐험 시작!</button>
         </div>
 
-        <div id="main-view" style="display:none;">
-            <div id="capture-area">
-                <div class="blackboard">정 면 (칠판)</div>
-                <div id="desk-grid" class="grid-layout"></div>
-            </div>
-            <div style="text-align:center; margin-top:30px;">
-                <button class="btn btn-accent" id="shuffle-btn" onclick="shuffle()">✨ 자리 섞기</button>
-                <button class="btn btn-main" style="background:#2ECC71;" onclick="save()">📸 이미지 저장</button>
-            </div>
+        <span class="step-title">2단계: 학생 명단 확인</span>
+        <textarea id="name-input" style="width:100%; height:80px; border-radius:10px; border:2px solid var(--border); padding:10px; font-family:inherit;" placeholder="엑셀을 업로드하거나 이름을 직접 쉼표로 구분해 입력하세요."></textarea>
+        
+        <button class="main-action" style="margin-top:20px; width:100%;" onclick="startLayout()">자리 배치 시작하기</button>
+    </div>
+
+    <div id="main-view" style="display:none;">
+        <div id="capture-area" style="padding:20px;">
+            <div class="blackboard">정 면 (칠판)</div>
+            <div id="desk-grid" class="desk-area"></div>
+        </div>
+        <div class="btn-group">
+            <button class="main-action" onclick="shuffle()">✨ 다시 섞기</button>
+            <button class="main-action" style="background:#2ECC71;" onclick="saveImage()">📸 이미지 저장</button>
+            <button class="main-action" style="background:var(--primary);" onclick="location.reload()">🔄 처음으로</button>
         </div>
     </div>
+</div>
 
 <script>
     let students = [];
-    let fixed = {};
-    let layout = '2-3';
+    let currentLayout = '2-3';
 
     function changeTheme(theme) {
         document.body.className = theme === 'default' ? '' : theme;
-        const titleMap = { 'default': '🏫 우리 반 자리 바꾸기', 'theme-space': '🛸 우리 반 우주 여행', 'theme-cookie': '🍪 우리 반 쿠키 여행' };
-        document.getElementById('main-title').innerText = titleMap[theme];
     }
 
-    function syncStudents() {
-        students = document.getElementById('manual-input').value.split(/[,\s\n]+/).filter(s => s);
-        if(students.length > 0) updatePreview();
+    function handleExcel(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+            students = json.flat().filter(n => n);
+            document.getElementById('name-input').value = students.join(', ');
+            alert(`${students.length}명의 명단을 불러왔습니다!`);
+        };
+        reader.readAsArrayBuffer(file);
     }
 
-    function setLayout(btn, l) {
-        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+    function selectLayout(btn, type) {
+        document.querySelectorAll('.img-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        layout = l;
-        updatePreview();
+        currentLayout = type;
     }
 
-    function updatePreview() {
-        if(!students.length) return;
-        document.getElementById('secret-panel').style.display = 'block';
-        const grid = document.getElementById('preview-grid');
-        grid.innerHTML = '';
-        let cols = layout.includes('-m') ? 4 : layout.split('-')[0];
-        const dummyGrid = document.createElement('div');
-        dummyGrid.style.display = 'grid';
-        dummyGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        dummyGrid.style.gap = '5px';
-        students.forEach((_, i) => {
-            const d = document.createElement('div');
-            d.style.cssText = "width:40px; height:30px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.7rem; border-radius:5px;";
-            d.innerText = fixed[i] ? fixed[i] : i + 1;
-            if(fixed[i]) d.style.background = "var(--accent)";
-            d.onclick = () => {
-                const name = prompt("고정할 학생 이름:", students.join(', '));
-                if(name && students.includes(name)) fixed[i] = name;
-                else delete fixed[i];
-                updatePreview();
-            };
-            dummyGrid.appendChild(d);
-        });
-        grid.appendChild(dummyGrid);
-    }
+    function startLayout() {
+        const input = document.getElementById('name-input').value;
+        students = input.split(/[,\s\n]+/).filter(s => s);
+        if(!students.length) return alert("학생 명단을 입력해주세요.");
 
-    function startApp() {
-        if(!students.length) return alert("명단을 입력해주세요!");
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
+        
+        renderDesks();
+    }
+
+    function renderDesks() {
         const grid = document.getElementById('desk-grid');
         grid.innerHTML = '';
-        let groupSize = layout.includes('-m') ? parseInt(layout) : parseInt(layout.split('-')[0]) * 2;
+        
+        let groupSize = currentLayout.includes('-m') ? parseInt(currentLayout) : 2;
+        let cols = currentLayout === '2-3' ? 3 : (currentLayout.includes('-m') ? 2 : 4);
+
         const groupCount = Math.ceil(students.length / groupSize);
         for(let i=0; i<groupCount; i++) {
-            const bDiv = document.createElement('div');
-            bDiv.style.display = 'grid';
-            bDiv.style.gridTemplateColumns = `repeat(${layout.includes('-m') ? 2 : layout.split('-')[0]}, 1fr)`;
-            bDiv.style.gap = '15px';
+            const groupDiv = document.createElement('div');
+            groupDiv.style.display = 'grid';
+            groupDiv.style.gridTemplateColumns = `repeat(${currentLayout.includes('-m') ? 2 : 1}, 1fr)`;
+            groupDiv.style.gap = '10px';
+            groupDiv.style.padding = '10px';
+            groupDiv.style.border = '1px dashed var(--border)';
+            groupDiv.style.borderRadius = '15px';
+
             for(let j=0; j<groupSize; j++) {
-                const idx = i * groupSize + j;
-                if(idx < students.length) {
-                    const d = document.createElement('div');
-                    d.className = 'student-desk';
-                    d.innerHTML = `<span id="name-${idx}">?</span>`;
-                    bDiv.appendChild(d);
+                if(i * groupSize + j < students.length) {
+                    const desk = document.createElement('div');
+                    desk.className = 'student-desk';
+                    desk.id = `desk-${i * groupSize + j}`;
+                    desk.innerText = '?';
+                    groupDiv.appendChild(desk);
                 }
             }
-            grid.appendChild(bDiv);
+            grid.appendChild(groupDiv);
         }
+        shuffle();
     }
 
     function shuffle() {
-        let count = 0;
-        const timer = setInterval(() => {
-            const randomList = [...students].sort(() => Math.random() - 0.5);
-            students.forEach((_, i) => {
-                const el = document.getElementById(`name-${i}`);
-                if(el) el.innerText = randomList[i % randomList.length];
-            });
-            if(++count > 20) {
-                clearInterval(timer);
-                const fixedNames = Object.values(fixed);
-                let pool = students.filter(s => !fixedNames.includes(s)).sort(() => Math.random() - 0.5);
-                students.forEach((_, i) => {
-                    const el = document.getElementById(`name-${i}`);
-                    if(el) el.innerText = fixed[i] ? fixed[i] : pool.pop();
-                });
-            }
-        }, 80);
+        const shuffled = [...students].sort(() => Math.random() - 0.5);
+        students.forEach((_, i) => {
+            const el = document.getElementById(`desk-${i}`);
+            if(el) el.innerText = shuffled[i];
+        });
     }
 
-    function save() {
-        html2canvas(document.getElementById('capture-area'), { backgroundColor: getComputedStyle(document.body).backgroundColor }).then(canvas => {
-            const a = document.createElement('a'); a.href = canvas.toDataURL();
-            a.download = '우리_반_자리_배치도.png'; a.click();
+    function saveImage() {
+        html2canvas(document.getElementById('capture-area'), { 
+            backgroundColor: getComputedStyle(document.body).backgroundColor 
+        }).then(canvas => {
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL();
+            a.download = '우리반_배치도.png';
+            a.click();
         });
     }
 </script>
