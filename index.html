@@ -6,7 +6,7 @@
     <title>우리 반 자리 바꾸기</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Gaegu:wght@700&family=Jua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Gaegu:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* 일반 테마 (Default) */
@@ -15,105 +15,126 @@
             --deco-display: none;
         }
 
-        /* 우주 여행 테마 */
+        /* 우주 여행 테마 (아기자기한 버전) */
         body.theme-space {
-            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #050A18; --container-bg: rgba(10, 20, 40, 0.95);
-            --desk: rgba(255, 255, 255, 0.15); --board: #1A3A1A; --text: #FFFFFF; --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive;
-            --deco-display: block;
-        }
-
-        /* 달콤 쿠키 테마 (뽀로로 스타일 고도화) */
-        body.theme-cookie {
-            --primary: #85C1E9; --accent: #F1948A; --bg: #EBF5FB; /* 눈 덮인 마을 느낌 */
-            --container-bg: rgba(255, 255, 255, 0.9); --desk: #FFF;
-            --board: #A04000; --text: #2E4053; --border: #AED6F1; --font: 'Jua', sans-serif;
+            --primary: #5BC0BE; --accent: #FF6B6B; --bg: #0B132B; --container-bg: rgba(15, 25, 50, 0.9);
+            --desk: rgba(255, 255, 255, 0.15); --board: linear-gradient(135deg, #1A3A1A, #0F2A0F); --text: #FFFFFF; 
+            --border: rgba(91, 192, 190, 0.5); --font: 'Gaegu', cursive;
             --deco-display: block;
         }
 
         body { font-family: var(--font); background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; transition: 0.5s; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 95%; max-width: 900px; max-height: 95vh; background: var(--container-bg); padding: 25px; border-radius: 40px; border: 4px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; z-index: 10; overflow-y: auto; }
+        .container { width: 95%; max-width: 950px; max-height: 95vh; background: var(--container-bg); padding: 25px; border-radius: 40px; border: 4px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; z-index: 10; overflow-y: auto; }
 
-        /* 테마 컨트롤 */
-        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .theme-select { padding: 8px 12px; border-radius: 15px; border: 2px solid var(--border); font-family: inherit; cursor: pointer; background: white; }
+        /* 테마 및 파일 컨트롤 */
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .theme-select { padding: 8px 12px; border-radius: 12px; border: 2px solid var(--border); font-family: inherit; cursor: pointer; }
 
-        /* 이미지 버튼 (가이드 UI) */
-        .layout-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 15px 0 25px; }
+        /* 단계별 제목 */
+        .step-label { display: block; font-size: 1.1rem; font-weight: bold; margin: 15px 0 10px; border-left: 5px solid var(--accent); padding-left: 10px; color: var(--primary); }
+
+        /* 이미지 버튼 레이아웃 (2행 구성) */
+        .layout-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .img-btn { 
-            background: var(--desk); border: 3px solid var(--border); border-radius: 20px; padding: 12px; cursor: pointer; 
-            text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            background: var(--desk); border: 3px solid var(--border); border-radius: 15px; padding: 10px; cursor: pointer; 
+            text-align: center; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
-        .img-btn.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.1); transform: translateY(-3px); }
-        .img-btn svg { width: 50px; height: 35px; fill: var(--text); }
+        .img-btn:hover { transform: scale(1.03); border-color: var(--primary); }
+        .img-btn.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.15); box-shadow: 0 0 15px rgba(255,107,107,0.2); }
+        .img-btn svg { width: 45px; height: 35px; fill: var(--text); opacity: 0.9; }
+        .img-btn span { font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
 
-        /* 학생 배치 영역 */
-        .blackboard { width: 220px; background: var(--board); color: white; padding: 10px; border-radius: 15px; margin: 0 auto 30px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        /* 자리 배치 영역 */
+        .blackboard { width: 220px; background: var(--board); color: white; padding: 10px; border-radius: 15px; margin: 0 auto 30px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); border: 4px solid #5D4037; }
         .desk-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-        .student-desk { width: 100px; height: 65px; background: var(--desk); border: 2px solid var(--border); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 0 var(--border); }
+        .student-desk { width: 95px; height: 60px; background: var(--desk); border: 2px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; box-shadow: 0 4px 0 var(--border); }
 
-        /* 데코레이션 일러스트 (우주 & 쿠키) */
-        .deco-obj { display: var(--deco-display); position: fixed; pointer-events: none; z-index: 1; }
-        .ufo { font-size: 250px; opacity: 0.1; animation: fly 25s infinite linear; }
-        .cookie-char { font-size: 80px; filter: drop-shadow(5px 5px 0px rgba(0,0,0,0.05)); }
+        /* 우주 테마 대형 일러스트 데코 */
+        .deco-obj { display: var(--deco-display); position: fixed; pointer-events: none; z-index: 1; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
+        .ufo-big { font-size: 300px; opacity: 0.15; animation: float-ufo 20s infinite linear; }
+        .planet-cute { font-size: 100px; animation: rotate-slow 30s infinite linear; }
+        
+        @keyframes float-ufo { from { left: -350px; top: 10%; } to { left: 100vw; top: 30%; } }
+        @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
-        @keyframes fly { from { left: -300px; top: 10%; } to { left: 100vw; top: 40%; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(5deg); } }
-
-        .btn-main { background: var(--accent); color: white; padding: 18px; border-radius: 20px; border: none; font-size: 1.4rem; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 0 #E57373; }
-        .btn-main:active { transform: translateY(4px); box-shadow: 0 2px 0 #E57373; }
+        .btn-main { background: var(--accent); color: white; padding: 18px; border-radius: 20px; border: none; font-size: 1.3rem; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 0 #E57373; margin-top: 10px; }
+        .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #E57373; }
     </style>
 </head>
-<body> <div class="deco-obj ufo" id="ufo-obj">🛸</div>
-
-<div class="deco-obj cookie-char" id="cookie-1" style="top:10%; left:5%; animation: bounce 4s infinite ease-in-out;">🦖</div>
-<div class="deco-obj cookie-char" id="cookie-2" style="bottom:15%; right:8%; animation: bounce 5s infinite ease-in-out; animation-delay: 1s;">🐧</div>
-<div class="deco-obj cookie-char" id="cookie-3" style="top:20%; right:5%; animation: bounce 6s infinite ease-in-out;">🍪</div>
+<body class="theme-space"> <div class="deco-obj ufo-big">🛸</div>
+<div class="deco-obj planet-cute" style="top:5%; right:5%; animation: bounce 6s infinite ease-in-out;">🪐</div>
+<div class="deco-obj planet-cute" style="bottom:10%; left:5%; font-size:80px; animation: bounce 8s infinite ease-in-out;">🌍</div>
+<div class="deco-obj planet-cute" style="top:40%; right:10%; font-size:60px; opacity:0.5;">✨</div>
 
 <div class="container">
     <div class="header-controls">
         <select class="theme-select" onchange="changeTheme(this.value)">
-            <option value="default">🏫 일반 테마 (기본)</option>
+            <option value="default" selected>🏫 일반 테마</option>
             <option value="theme-space">🌌 우주 여행</option>
-            <option value="theme-cookie">🍪 달콤 쿠키 (뽀로로 스타일)</option>
         </select>
         <label style="background:var(--primary); color:white; padding:8px 15px; border-radius:12px; cursor:pointer; font-size:0.9rem; font-weight:bold;">
-            📁 엑셀/CSV 업로드
+            📁 명단 엑셀 업로드
             <input type="file" accept=".xlsx, .csv" style="display:none;" onchange="handleExcel(event)">
         </label>
     </div>
 
     <div id="setup-view">
-        <b style="border-left:5px solid var(--accent); padding-left:10px;">1. 대형 선택</b>
-        <div class="layout-grid">
+        <span class="step-label">1. 분단형 대형 선택</span>
+        <div class="layout-row">
             <div class="img-btn active" onclick="selectLayout(this, '2-3')">
-                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="20" height="15" rx="3"/><rect x="40" y="10" width="20" height="15" rx="3"/><rect x="70" y="10" width="20" height="15" rx="3"/><rect x="10" y="35" width="20" height="15" rx="3"/><rect x="40" y="35" width="20" height="15" rx="3"/><rect x="70" y="35" width="20" height="15" rx="3"/></svg>
-                <span>3분단 (2줄씩)</span>
+                <svg viewBox="0 0 100 60"><rect x="15" y="10" width="20" height="15" rx="3"/><rect x="40" y="10" width="20" height="15" rx="3"/><rect x="65" y="10" width="20" height="15" rx="3"/><rect x="15" y="35" width="20" height="15" rx="3"/><rect x="40" y="35" width="20" height="15" rx="3"/><rect x="65" y="35" width="20" height="15" rx="3"/></svg>
+                <span>2-2-2 (3분단)</span>
+            </div>
+            <div class="img-btn" onclick="selectLayout(this, '2-3-2')">
+                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="15" height="15"/><rect x="30" y="10" width="15" height="15"/><rect x="55" y="10" width="15" height="15"/><rect x="75" y="10" width="15" height="15"/><rect x="10" y="35" width="15" height="15"/><rect x="30" y="35" width="15" height="15"/><rect x="55" y="35" width="15" height="15"/><rect x="75" y="35" width="15" height="15"/></svg>
+                <span>2-3-2</span>
+            </div>
+            <div class="img-btn" onclick="selectLayout(this, '2-4')">
+                <svg viewBox="0 0 100 60"><rect x="5" y="10" width="18" height="15"/><rect x="28" y="10" width="18" height="15"/><rect x="52" y="10" width="18" height="15"/><rect x="75" y="10" width="18" height="15"/><rect x="5" y="35" width="18" height="15"/><rect x="28" y="35" width="18" height="15"/><rect x="52" y="35" width="18" height="15"/><rect x="75" y="35" width="18" height="15"/></svg>
+                <span>2-2-2-2 (4분단)</span>
+            </div>
+            <div class="img-btn" onclick="selectLayout(this, '1-6')">
+                <svg viewBox="0 0 100 60"><rect x="10" y="10" width="10" height="12"/><rect x="25" y="10" width="10" height="12"/><rect x="40" y="10" width="10" height="12"/><rect x="55" y="10" width="10" height="12"/><rect x="70" y="10" width="10" height="12"/><rect x="85" y="10" width="10" height="12"/><rect x="10" y="35" width="10" height="12"/><rect x="25" y="35" width="10" height="12"/><rect x="40" y="35" width="10" height="12"/><rect x="55" y="35" width="10" height="12"/><rect x="70" y="35" width="10" height="12"/><rect x="85" y="35" width="10" height="12"/></svg>
+                <span>1-1-1-1-1-1</span>
+            </div>
+        </div>
+
+        <span class="step-label">2. 모둠형 대형 선택</span>
+        <div class="layout-row">
+            <div class="img-btn" onclick="selectLayout(this, '2-m')">
+                <svg viewBox="0 0 100 60"><circle cx="40" cy="30" r="10"/><circle cx="65" cy="30" r="10"/></svg>
+                <span>2인 모둠</span>
             </div>
             <div class="img-btn" onclick="selectLayout(this, '4-m')">
-                <svg viewBox="0 0 100 60"><rect x="20" y="10" width="20" height="18" rx="5"/><rect x="60" y="10" width="20" height="18" rx="5"/><rect x="20" y="32" width="20" height="18" rx="5"/><rect x="60" y="32" width="20" height="18" rx="5"/></svg>
+                <svg viewBox="0 0 100 60"><rect x="25" y="10" width="20" height="18" rx="4"/><rect x="55" y="10" width="20" height="18" rx="4"/><rect x="25" y="32" width="20" height="18" rx="4"/><rect x="55" y="32" width="20" height="18" rx="4"/></svg>
                 <span>4인 모둠</span>
             </div>
+            <div class="img-btn" onclick="selectLayout(this, '5-m')">
+                <svg viewBox="0 0 100 60"><circle cx="30" cy="18" r="8"/><circle cx="70" cy="18" r="8"/><circle cx="20" cy="42" r="8"/><circle cx="50" cy="42" r="8"/><circle cx="80" cy="42" r="8"/></svg>
+                <span>5인 모둠</span>
+            </div>
             <div class="img-btn" onclick="selectLayout(this, '6-m')">
-                <svg viewBox="0 0 100 60"><circle cx="20" cy="15" r="8"/><circle cx="50" cy="15" r="8"/><circle cx="80" cy="15" r="8"/><circle cx="20" cy="45" r="8"/><circle cx="50" cy="45" r="8"/><circle cx="80" cy="45" r="8"/></svg>
+                <svg viewBox="0 0 100 60"><circle cx="25" cy="15" r="8"/><circle cx="50" cy="15" r="8"/><circle cx="75" cy="15" r="8"/><circle cx="25" cy="45" r="8"/><circle cx="50" cy="45" r="8"/><circle cx="75" cy="45" r="8"/></svg>
                 <span>6인 모둠</span>
             </div>
         </div>
 
-        <b style="border-left:5px solid var(--accent); padding-left:10px;">2. 명단 확인</b>
-        <textarea id="name-input" style="width:100%; height:70px; margin-top:10px; border-radius:15px; border:2px solid var(--border); padding:12px; font-family:inherit;" placeholder="이름을 입력하거나 엑셀을 업로드하세요."></textarea>
+        <span class="step-label">3. 명단 입력</span>
+        <textarea id="name-input" style="width:100%; height:70px; margin-top:5px; border-radius:15px; border:2px solid var(--border); padding:12px; font-family:inherit;" placeholder="이름을 직접 입력하거나 엑셀 파일을 업로드하세요."></textarea>
         
-        <button class="btn-main" style="margin-top:20px;" onclick="startLayout()">우리 반 자리 바꾸기 시작!</button>
+        <button class="btn-main" onclick="startLayout()">자리 바꾸기 시작!</button>
     </div>
 
     <div id="main-view" style="display:none;">
-        <div id="capture-area">
+        <div id="capture-area" style="padding:10px;">
             <div class="blackboard">정 면 (칠판)</div>
             <div id="desk-grid" class="desk-area"></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:25px;">
             <button class="btn-main" onclick="shuffle()">✨ 다시 섞기</button>
-            <button class="btn-main" style="background:#2ECC71; box-shadow: 0 6px 0 #27AE60;" onclick="saveImage()">📸 이미지 저장</button>
-            <button class="btn-main" style="background:#95A5A6; box-shadow: 0 6px 0 #7F8C8D;" onclick="location.reload()">🔄 처음으로</button>
+            <button class="btn-main" style="background:#2ECC71; box-shadow: 0 5px 0 #27AE60;" onclick="saveImage()">📸 이미지 저장</button>
+            <button class="btn-main" style="background:#95A5A6; box-shadow: 0 5px 0 #7F8C8D;" onclick="location.reload()">🔄 처음으로</button>
         </div>
     </div>
 </div>
@@ -124,13 +145,10 @@
 
     function changeTheme(theme) {
         document.body.className = theme === 'default' ? '' : theme;
-        // 테마별 데코레이션 제어
-        document.getElementById('ufo-obj').style.display = theme === 'theme-space' ? 'block' : 'none';
-        const cookieObjs = [document.getElementById('cookie-1'), document.getElementById('cookie-2'), document.getElementById('cookie-3')];
-        cookieObjs.forEach(obj => obj.style.display = theme === 'theme-cookie' ? 'block' : 'none');
+        const isSpace = theme === 'theme-space';
+        document.querySelectorAll('.deco-obj').forEach(obj => obj.style.display = isSpace ? 'block' : 'none');
     }
 
-    // 엑셀 핸들링 (XLSX 라이브러리)
     function handleExcel(event) {
         const file = event.target.files[0];
         const reader = new FileReader();
@@ -154,7 +172,7 @@
     function startLayout() {
         const input = document.getElementById('name-input').value;
         students = input.split(/[,\s\n]+/).filter(s => s.trim());
-        if(!students.length) return alert("명단을 입력해주세요!");
+        if(!students.length) return alert("학생 명단을 입력해주세요!");
         document.getElementById('setup-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
         renderDesks();
@@ -163,13 +181,26 @@
     function renderDesks() {
         const grid = document.getElementById('desk-grid');
         grid.innerHTML = '';
-        let groupSize = currentLayout.includes('-m') ? parseInt(currentLayout) : 2;
+        
+        let groupSize;
+        if(currentLayout === '2-3') groupSize = 2;
+        else if(currentLayout === '2-3-2') groupSize = 2;
+        else if(currentLayout === '2-4') groupSize = 2;
+        else if(currentLayout === '1-6') groupSize = 1;
+        else groupSize = parseInt(currentLayout);
+
         const groupCount = Math.ceil(students.length / groupSize);
 
         for(let i=0; i<groupCount; i++) {
             const groupDiv = document.createElement('div');
-            groupDiv.style.cssText = "display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; padding:12px; border:2px dashed var(--border); border-radius:20px;";
-            if(currentLayout === '2-3') groupDiv.style.gridTemplateColumns = "repeat(2, 1fr)";
+            groupDiv.style.cssText = "display:grid; gap:10px; padding:12px; border:2px dashed var(--border); border-radius:20px;";
+            
+            let cols = 2;
+            if(currentLayout === '1-6') cols = 1;
+            if(currentLayout === '5-m') cols = 3;
+            if(currentLayout === '6-m') cols = 3;
+            
+            groupDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             
             for(let j=0; j<groupSize; j++) {
                 if(i * groupSize + j < students.length) {
@@ -195,17 +226,16 @@
 
     function saveImage() {
         html2canvas(document.getElementById('capture-area'), { 
-            backgroundColor: getComputedStyle(document.body).backgroundColor,
-            borderRadius: 20
+            backgroundColor: getComputedStyle(document.body).backgroundColor
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = '우리반_자리배치.png';
+            link.download = '배치도.png';
             link.href = canvas.toDataURL();
             link.click();
         });
     }
 
-    // 초기 상태 설정
+    // 초기 테마 설정 (일반 테마가 기본)
     changeTheme('default');
 </script>
 </body>
